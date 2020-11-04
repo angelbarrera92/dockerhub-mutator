@@ -1,0 +1,111 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app: dockerhub-mutator
+  name: mutator-root
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app: dockerhub-mutator
+  name: mutator-root-ca
+spec:
+  commonName: mutator
+  dnsNames:
+    - mutator
+  isCA: true
+  issuerRef:
+    kind: Issuer
+    name: mutator-root
+  secretName: mutator-root-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app: dockerhub-mutator
+  name: mutator-root-ca
+spec:
+  ca:
+    secretName: mutator-root-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app: dockerhub-mutator
+  name: dockerhub-mutator
+spec:
+  commonName: dockerhub-mutator
+  dnsNames:
+    - dockerhub-mutator
+    - dockerhub-mutator.default
+    - dockerhub-mutator.default.svc
+  duration: 2160h0m0s
+  issuerRef:
+    kind: Issuer
+    name: mutator-root-ca
+  renewBefore: 360h0m0s
+  secretName: dockerhub-mutator-cert
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dockerhub-mutator
+  name: dockerhub-mutator
+spec:
+  selector:
+    matchLabels:
+      app: dockerhub-mutator
+  template:
+    metadata:
+      labels:
+        app: dockerhub-mutator
+    spec:
+      containers:
+        - name: dockerhub-mutator
+          image: dockerhub-mutator:latest
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /
+              port: https
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          volumeMounts:
+            - readOnly: true
+              mountPath: /certs
+              name: certs
+          ports:
+            - name: https
+              containerPort: 443
+      volumes:
+        - name: certs
+          secret:
+            secretName: dockerhub-mutator-cert
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: dockerhub-mutator
+  labels:
+    app: dockerhub-mutator
+spec:
+  selector:
+    app: dockerhub-mutator
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443

@@ -1,0 +1,29 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: dockerhub-mutator
+  labels:
+    app: dockerhub-mutator
+  annotations:
+    cert-manager.io/inject-ca-from: default/dockerhub-mutator
+webhooks:
+  - name: dockerhub-mutator.default.svc.cluster.local
+    admissionReviewVersions: ["v1", "v1beta"]
+    sideEffects: NoneOnDryRun
+    failurePolicy: Fail # Warning.
+    timeoutSeconds: 30
+    clientConfig:
+      service:
+        name: dockerhub-mutator
+        namespace: default
+        path: /mutator/deployment
+        port: 443
+      caBundle: "Cg=="
+    rules:
+      - apiGroups: ["apps"]
+        resources:
+          - "deployments"
+        apiVersions:
+          - "*"
+        operations:
+          - CREATE
