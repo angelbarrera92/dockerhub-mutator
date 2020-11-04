@@ -1,0 +1,7 @@
+.venv
+.vscode
+.gitignore
+*.md
+requirements-dev.txt
+Dockerfile
+hack/
