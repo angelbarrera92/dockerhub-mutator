@@ -10,9 +10,8 @@ It should avoid the [new rate limit Docker inc is setting up in its Hub](https:/
 This project is a simple **POC**.
 It has some pending points to be implemented before consider it a beta software.
 
-- It only mutates deployment objects.
-- It only mutates the first container image in a deployment object.
-- It only mutates CREATE requests.
+- [ ] Logging
+- [ ] Metrics
 
 ## Run it locally
 
