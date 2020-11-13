@@ -16,14 +16,23 @@ webhooks:
       service:
         name: dockerhub-mutator
         namespace: default
-        path: /mutator/deployment
+        path: /mutator/dockerhub
         port: 443
       caBundle: "Cg=="
     rules:
-      - apiGroups: ["apps"]
+      - apiGroups: ["*"]
         resources:
           - "deployments"
+          - "pods"
+          - "jobs"
+          - "cronjobs"
+          - "replicasets"
+          - "replicationcontrollers"
+          - "daemonsets"
+          - "statefulsets"
+          - "podtemplates"
         apiVersions:
           - "*"
         operations:
           - CREATE
+          - UPDATE
