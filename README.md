@@ -7,17 +7,55 @@ It should avoid the [new rate limit Docker inc is setting up in its Hub](https:/
 
 ## Disclaimer
 
-This project is a simple **POC**.
+Project current state: **POC**.
 It has some pending points to be implemented before consider it a beta software.
 
+- [ ] Deployed in the default namespace *(hardcoded)*
+    - [ ] Helm Chart
 - [ ] Logging
 - [ ] Metrics
+
+## Run it in your cluster
+
+### Requirements
+
+An already working Kubernetes cluster with [cert-manager](https://github.com/jetstack/cert-manager) installed.
+
+### Deploy
+
+The container image with the mutator is available at the GitHub Container Registry: `ghcr.io/angelbarrera92/dockerhub-mutator:latest`.
+
+```bash
+$ docker pull ghcr.io/angelbarrera92/dockerhub-mutator:latest
+```
+
+Available for the following architectures:
+
+- `linux/amd64`
+- `linux/arm/v6`
+- `linux/arm/v7`
+- `linux/arm64`
+
+
+Deploy the solution using the following commands:
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/angelbarrera92/dockerhub-mutator/master/hack/deploy.yaml
+issuer.cert-manager.io/mutator-root created
+certificate.cert-manager.io/mutator-root-ca created
+issuer.cert-manager.io/mutator-root-ca created
+certificate.cert-manager.io/dockerhub-mutator created
+deployment.apps/dockerhub-mutator created
+service/dockerhub-mutator created
+$ kubectl apply -f https://raw.githubusercontent.com/angelbarrera92/dockerhub-mutator/master/hack/mutation.yaml
+mutatingwebhookconfiguration.admissionregistration.k8s.io/dockerhub-mutator created
+```
 
 ## Run it locally
 
 ### Requirements
 
-Create a local kind cluster then install cert-manager:
+Create a local [kind](https://github.com/kubernetes-sigs/kind) cluster then install [cert-manager](https://github.com/jetstack/cert-manager):
 
 ```bash
 $ kind create cluster
@@ -81,10 +119,10 @@ validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook
 Wait until all cert-manager containers are running, then after cloning this repository, run the following commands:
 
 ```bash
-$ docker build -q --no-cache -t dockerhub-mutator:latest .
-sha256:8820d2f24d9e761fff880f554cff11ed587183dee782625a443b3eea7a09df13
-$ kind load docker-image dockerhub-mutator:latest
-Image: "dockerhub-mutator:latest" with ID "sha256:8820d2f24d9e761fff880f554cff11ed587183dee782625a443b3eea7a09df13" not yet present on node "kind-control-plane", loading...
+$ docker build -q --no-cache -t ghcr.io/angelbarrera92/dockerhub-mutator:latest .
+sha256:b97575883f02cd3dcdf0a9334ff88850f7dbc9dc00064e54c6188b9c4bde4afe
+$ kind load docker-image ghcr.io/angelbarrera92/dockerhub-mutator:latest
+Image: "ghcr.io/angelbarrera92/dockerhub-mutator:latest" with ID "sha256:b97575883f02cd3dcdf0a9334ff88850f7dbc9dc00064e54c6188b9c4bde4afe" not yet present on node "kind-control-plane", loading...
 $ kubectl apply -f hack/deploy.yaml
 issuer.cert-manager.io/mutator-root created
 certificate.cert-manager.io/mutator-root-ca created
@@ -96,7 +134,7 @@ $ kubectl apply -f hack/mutation.yaml
 mutatingwebhookconfiguration.admissionregistration.k8s.io/dockerhub-mutator created
 ```
 
-### Test it
+## Test it
 
 Once everything is placed, create a deployment
 
