@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
         - name: dockerhub-mutator
-          image: dockerhub-mutator:latest
+          image: ghcr.io/angelbarrera92/dockerhub-mutator:latest
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
